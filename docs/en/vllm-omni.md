@@ -24,8 +24,7 @@ python gateway.py --host 127.0.0.1 --port 8006 --http \
 Open http://127.0.0.1:8006/audio_duplex for voice or
 http://127.0.0.1:8006/omni for camera and voice. The browser connects directly
 to the given WebSocket URL; use a browser-accessible `wss://` URL when serving
-the page over HTTPS. Set `--vllm-omni-model` if the server uses a different
-served model name. The Omni server manages models and session capacity.
+the page over HTTPS. The Omni server manages models and session capacity.
 
 Independent TTS reference audio and server-side save/share are unavailable.
 Turn-based and mobile clients use the provider backend.

@@ -1,5 +1,6 @@
 import { RealtimeSession } from './realtime-session.js';
 import { arrayBufferToBase64 } from './duplex-utils.js';
+import { encodeWav } from './mixer-controller.js';
 
 function decodeBase64(data) {
     return Uint8Array.from(atob(data), char => char.charCodeAt(0));
@@ -15,20 +16,6 @@ function pcm16(data) {
     return pcm;
 }
 
-function referenceWav(data) {
-    const pcm = pcm16(data);
-    const buffer = new ArrayBuffer(44 + pcm.byteLength);
-    const view = new DataView(buffer);
-    const text = (offset, value) => [...value].forEach((char, i) => view.setUint8(offset + i, char.charCodeAt(0)));
-    text(0, 'RIFF'); view.setUint32(4, 36 + pcm.byteLength, true); text(8, 'WAVE');
-    text(12, 'fmt '); view.setUint32(16, 16, true); view.setUint16(20, 1, true);
-    view.setUint16(22, 1, true); view.setUint32(24, 16000, true);
-    view.setUint32(28, 32000, true); view.setUint16(32, 2, true); view.setUint16(34, 16, true);
-    text(36, 'data'); view.setUint32(40, pcm.byteLength, true);
-    new Uint8Array(buffer, 44).set(new Uint8Array(pcm.buffer));
-    return `data:audio/wav;base64,${arrayBufferToBase64(buffer)}`;
-}
-
 export class VllmOmniSession extends RealtimeSession {
     constructor(prefix, config, backend) {
         super(prefix, config);
@@ -41,13 +28,16 @@ export class VllmOmniSession extends RealtimeSession {
         const url = new URL(this.backend.url);
         url.searchParams.set('duplex', '1');
         url.searchParams.set('autostart', '0');
-        url.searchParams.set('model', this.backend.model);
         const session = {
             modalities: ['audio', 'text'], instructions: systemPrompt,
             turn_detection: { type: 'server_vad' }, playback_commit_policy: 'ack_only',
             extra_body: { auto_response: true, force_listen_count: 0 },
         };
-        if (payload.ref_audio_base64) session.ref_audio = referenceWav(payload.ref_audio_base64);
+        if (payload.ref_audio_base64) {
+            const samples = new Float32Array(decodeBase64(payload.ref_audio_base64).buffer);
+            const wav = await encodeWav(samples, 16000).arrayBuffer();
+            session.ref_audio = `data:audio/wav;base64,${arrayBufferToBase64(wav)}`;
+        }
         this.onMetrics({ type: 'state', sessionState: 'Connecting...' });
         try {
             await new Promise((resolve, reject) => {
@@ -136,7 +126,6 @@ export class VllmOmniSession extends RealtimeSession {
             case 'response.created':
                 this._response(id);
                 break;
-            case 'response.audio.delta':
             case 'response.output_audio.delta': {
                 const response = this._response(id);
                 if (response.interrupted) return;
@@ -153,7 +142,6 @@ export class VllmOmniSession extends RealtimeSession {
                 });
                 break;
             }
-            case 'response.audio_transcript.delta':
             case 'response.output_audio_transcript.delta':
                 if (!this.responses.get(id)?.interrupted) this._handleSpeak({ text: event.delta });
                 break;

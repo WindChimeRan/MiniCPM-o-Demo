@@ -19,10 +19,6 @@ def add_arguments(parser):
         "--vllm-omni-url", type=_realtime_url,
         help="Browser-accessible MiniCPM vLLM-Omni WebSocket URL",
     )
-    parser.add_argument(
-        "--vllm-omni-model", default="openbmb/MiniCPM-o-4_5",
-        help="vLLM-Omni served model name",
-    )
 
 
 def configure(args, app, app_registry):
@@ -45,4 +41,4 @@ def configure(args, app, app_registry):
     app.add_api_route("/api/vllm_omni/health", health)
     app_registry.set_enabled("turnbased", False)
     app_registry.set_enabled("half_duplex_audio", False)
-    return {"url": args.vllm_omni_url, "model": args.vllm_omni_model}
+    return {"url": args.vllm_omni_url}

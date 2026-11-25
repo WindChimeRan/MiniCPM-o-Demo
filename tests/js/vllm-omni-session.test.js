@@ -45,14 +45,14 @@ class AudioContext {
 
 async function connect() {
     session = new VllmOmniSession('test', { getPlaybackDelayMs: () => 0 }, {
-        url: 'ws://localhost:8097/v1/realtime', model: 'minicpmo',
+        url: 'ws://localhost:8097/v1/realtime',
     });
     await session.start('Talk naturally', {}, async () => {});
     return session;
 }
 
 const audio = id => ({
-    type: 'response.audio.delta', response_id: id, delta: base64(new Int16Array(24000).fill(1000)),
+    type: 'response.output_audio.delta', response_id: id, delta: base64(new Int16Array(24000).fill(1000)),
 });
 const done = id => ({ type: 'response.done', response: { id, status: 'completed' } });
 const acks = socket => socket.sent.filter(event => event.type === 'playback.ack');
