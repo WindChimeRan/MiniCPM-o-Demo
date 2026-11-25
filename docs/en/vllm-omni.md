@@ -1,9 +1,9 @@
 # vLLM-Omni backend
 
 The desktop Audio Full-Duplex and Omni Full-Duplex pages can connect to an
-existing MiniCPM-o 4.5 vLLM-Omni server. Apple Silicon currently requires the
-deployment profile in [vLLM-Metal #1235](https://github.com/vllm-project/vllm-metal/pull/1235);
-follow its [launch instructions](https://github.com/vllm-project/vllm-metal/blob/101f4584108ba57fb4ba4dce4f798f6a2a04c6b1/docs/omni.md#minicpm-o-45).
+existing MiniCPM-o 4.5 vLLM-Omni server. On Apple Silicon, serve it with
+vLLM-Metal v0.34.0: follow the Setup and MiniCPM-o 4.5 sections of its
+[Omni guide](https://github.com/vllm-project/vllm-metal/blob/v0.34.0/docs/omni.md).
 
 Voice interruption uses Omni's server VAD. Install `onnxruntime` in the serving
 environment and cache its Silero model before starting the server:
