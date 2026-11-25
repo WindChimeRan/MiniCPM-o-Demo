@@ -156,9 +156,9 @@ This demo also supports a **C++ inference backend** based on llama.cpp-omni. Use
 
 Ready-to-use desktop installers are available for Windows and macOS. Download from [llama.cpp-omni Releases](https://github.com/tc-mb/llama.cpp-omni/releases/).
 
-## vLLM-Omni backend
+## Apple Silicon Backend (vLLM-Metal)
 
-See the [vLLM-Omni connection guide](docs/en/vllm-omni.md), including Apple Silicon setup through vLLM-Metal.
+On a Mac, vLLM-Metal serves MiniCPM-o 4.5 through vLLM-Omni, and the Audio Full-Duplex and Omnimodal Full-Duplex modes connect to it. See the [setup guide](docs/en/vllm-omni.md).
 
 ---
 

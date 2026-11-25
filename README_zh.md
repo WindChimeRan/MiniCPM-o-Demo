@@ -159,6 +159,10 @@ docker compose -f docker-compose.cpp.yml down  # C++ backend compose
 
 提供 Windows 和 macOS 的开箱即用安装包，前往 [llama.cpp-omni Releases](https://github.com/tc-mb/llama.cpp-omni/releases/) 下载。
 
+## Apple Silicon 后端（vLLM-Metal）
+
+在 Mac 上，vLLM-Metal 通过 vLLM-Omni 运行 MiniCPM-o 4.5，语音全双工和全模态全双工模式可直接连接。配置步骤见[安装指南](docs/en/vllm-omni.md)（英文）。
+
 ---
 
 ## 项目结构
