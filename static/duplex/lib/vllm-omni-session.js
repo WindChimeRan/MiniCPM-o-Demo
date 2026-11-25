@@ -6,16 +6,6 @@ function decodeBase64(data) {
     return Uint8Array.from(atob(data), char => char.charCodeAt(0));
 }
 
-function pcm16(data) {
-    const samples = new Float32Array(decodeBase64(data).buffer);
-    const pcm = new Int16Array(samples.length);
-    for (let i = 0; i < samples.length; i++) {
-        const value = Math.max(-1, Math.min(1, samples[i]));
-        pcm[i] = Math.round(value * (value < 0 ? 32768 : 32767));
-    }
-    return pcm;
-}
-
 export class VllmOmniSession extends RealtimeSession {
     constructor(prefix, config, backend) {
         super(prefix, config);
@@ -85,8 +75,8 @@ export class VllmOmniSession extends RealtimeSession {
 
     sendChunk(chunk) {
         if (!this.running || this.paused) return;
-        const event = { type: 'input_audio_buffer.append', format: 'pcm16', sample_rate_hz: 16000 };
-        if (chunk.audio_base64) event.audio = arrayBufferToBase64(pcm16(chunk.audio_base64).buffer);
+        const event = { type: 'input_audio_buffer.append', format: 'pcm_f32le', sample_rate_hz: 16000 };
+        if (chunk.audio_base64) event.audio = chunk.audio_base64;
         if (chunk.frame_base64_list) event.video_frames = chunk.frame_base64_list;
         if (this.forceListenActive || chunk.force_listen) event.force_listen = true;
         this._send(event);

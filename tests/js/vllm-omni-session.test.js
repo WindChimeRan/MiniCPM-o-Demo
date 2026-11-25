@@ -77,22 +77,17 @@ describe('vLLM-Omni session', () => {
         expect(backend.initHealthCheck).toBe(initHealthCheck);
     });
 
-    it('converts captured float audio to PCM16 and preserves camera frames', async () => {
+    it('sends captured float audio unchanged and preserves camera frames', async () => {
         await connect();
         const socket = session.ws;
         expect(socket.url.searchParams.get('duplex')).toBe('1');
         expect(socket.sent[0].session.playback_commit_policy).toBe('ack_only');
         expect(socket.sent[0].session.turn_detection).toEqual({ type: 'server_vad' });
-        session.sendChunk({
-            audio_base64: base64(new Float32Array([-2, -0.5, 0, 0.5, 2])),
-            frame_base64_list: ['jpeg-frame'], force_listen: true,
-        });
+        const captured = base64(new Float32Array([-0.5, 0, 0.5]));
+        session.sendChunk({ audio_base64: captured, frame_base64_list: ['jpeg-frame'], force_listen: true });
         const event = socket.sent.at(-1);
         expect(event.type).toBe('input_audio_buffer.append');
-        expect(event.sample_rate_hz).toBe(16000);
-        const bytes = Buffer.from(event.audio, 'base64');
-        expect(Array.from({ length: 5 }, (_, i) => bytes.readInt16LE(i * 2)))
-            .toEqual([-32768, -16384, 0, 16384, 32767]);
+        expect(event).toMatchObject({ format: 'pcm_f32le', sample_rate_hz: 16000, audio: captured });
         expect(event.video_frames).toEqual(['jpeg-frame']);
         expect(event.force_listen).toBe(true);
     });
